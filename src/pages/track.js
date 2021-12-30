@@ -1,41 +1,49 @@
 import React from 'react';
 import { useQuery, gql } from '@apollo/client';
-import TrackCard from '../containers/track-card';
 import { Layout, QueryResult } from '../components';
+import TrackDetail from '../components/track-detail';
 
-/** TRACKS gql query to retreive all tracks */
-export const TRACKS = gql`
-  query getTracks {
-    tracksForHome {
+/** GET_TRACK gql query to retrieve a specific track by its ID */
+export const GET_TRACK = gql`
+  query getTrack($trackId: ID!) {
+    track(id: $trackId) {
       id
       title
-      thumbnail
-      modulesCount
       author {
+        id
         name
         photo
       }
+      thumbnail
+      modulesCount
+      numberOfViews
+      modules {
+        id
+        title
+        durationInSeconds
+      }
+      description
       durationInSeconds
     }
   }
 `;
 
 /**
- * Tracks Page is the Catstronauts home page.
- * We display a grid of tracks fetched with useQuery with the TRACKS query
+ * Track Page fetches a track's data from the gql query GET_TRACK
+ * and provides it to the TrackDetail component to display
  */
-const Tracks = () => {
-  const { loading, error, data } = useQuery(TRACKS);
+const Track = ({ trackId }) => {
+  const { loading, error, data } = useQuery(GET_TRACK, {
+    variables: { trackId },
+  });
 
   return (
-    <Layout grid>
+    <Layout>
       <QueryResult error={error} loading={loading} data={data}>
-        {data?.tracksForHome?.map((track, index) => (
-          <TrackCard key={track.id} track={track} />
-        ))}
+        <TrackDetail track={data?.track} />
       </QueryResult>
     </Layout>
   );
 };
 
-export default Tracks;
+export default Track;
